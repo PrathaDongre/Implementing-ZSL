@@ -95,15 +95,18 @@ if success:
 else:
     print("\nTraining f and g...")
     for ep in range (1, n_epochs + 1):
+        c=0
         loss_g = 0
         loss_f = 0
         #Here, moving below OT part to trainer.py
         for idx, (img_features, label_attr, label_idx) in enumerate(train_generator):
             l_p, l_g = train_agent.fit_fg(img_features, label_attr, label_idx, args.use_cls_loss)
-            loss_att_classifier += l_p
-            loss_gan += l_g
+            loss_f += l_p
+            loss_g += l_g
             print("Loss for epoch: %3d - f: %.4f | g: %.4f"\
-                    %(ep, loss_att_classifier, loss_gan))
+                    %(ep, loss_f, loss_g))
+            c+=1
+            print(c) 
 
     train_agent.save_model(model=model_name)
 # =============================================================

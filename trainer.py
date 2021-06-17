@@ -217,11 +217,11 @@ class Trainer:
             L_gen += self.beta * L_p
 
         self.optim_f.zero_grad()
-        L_gen.backward()
+        L_gen.backward(retain_graph=True)
         self.optim_f.step()
 
         self.optim_G.zero_grad()
-        L_gen.backward()
+        L_gen.backward(retain_graph=True)
         self.optim_G.step()
 
         return L_p.item() , L_gen.item()
