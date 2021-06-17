@@ -11,6 +11,7 @@ import matplotlib.pylab as pl
 import ot
 import ot.plot
 from ot.datasets import make_1D_gauss as gauss
+import ot.gpu
 
 import os
 import numpy as np
@@ -151,10 +152,10 @@ class Trainer:
             img_features_Bs_corrected = img_features_Bs_corrected.cpu().detach().numpy()
             img_features_corrected = img_features_corrected.cpu().detach().numpy()
 
-            C = ot.dist(img_features_Bs_corrected, img_features_corrected, metric = 'cosine')
-            C = torch.FloatTensor(C)
-            T = ot.bregman.sinkhorn(a, b, C, 0.5)
-            T = torch.FloatTensor(T)
+            C = ot.gpu.dist(img_features_Bs_corrected, img_features_corrected)
+            T = ot.gpu.sinkhorn(a, b, C, 0.5)
+            C= torch.FloatTensor(C).to(self.device).requires_grad_()
+            T = torch.FloatTensor(T).to(self.device).requires_grad_()
         else:
             label_idx_list = label_idx.tolist()
             label_idx_Bs_list = label_idx_Bs.tolist()
@@ -178,10 +179,10 @@ class Trainer:
             #to avoid 'cant call numpy on tensor that requires grad error'
             img_features_Bs_corrected = img_features_Bs_corrected.cpu().detach().numpy()
             img_features_corrected = img_features_corrected.cpu().detach().numpy()
-
-            C = ot.dist(img_features_Bs_corrected, img_features_corrected, metric = 'cosine')
-            C = torch.FloatTensor(C)
-            T = torch.FloatTensor(T)
+            #using metric = cosine in ot.gpu.dist() gives NotImplementedError. So sticking with euclidean for now
+            C = ot.gpu.dist(img_features_Bs_corrected, img_features_corrected)
+            C = torch.FloatTensor(C).to(self.device).requires_grad_()
+            T = torch.FloatTensor(T).to(self.device).requires_grad_()
 
         L_gen = torch.mm(T,C).trace()
 
